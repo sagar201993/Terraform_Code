@@ -97,15 +97,16 @@ resource "aws_instance" "web_server" {
   vpc_security_group_ids      = [aws_security_group.web_sg.id]
   associate_public_ip_address = true
 
-  user_data = <<-EOF
-              #!/bin/bash
-              dnf update -y
-              dnf install nginx -y
-              systemctl start nginx
-              systemctl enable nginx
-              echo "<h1>Hello from Terraform DEV Web Server</h1>" > /usr/share/nginx/html/index.html
-              EOF
+  user_data_replace_on_change = true
 
+  user_data = <<-EOF
+#!/bin/bash
+apt update -y
+apt install apache2 -y
+systemctl enable apache2
+systemctl start apache2
+echo "<h1>Hello Sagar! Terraform + Apache is Working</h1>" > /var/www/html/index.html
+EOF
   tags = {
     Name        = "dev-web-server"
     Environment = "dev"
