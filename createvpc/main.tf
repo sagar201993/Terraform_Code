@@ -97,6 +97,15 @@ resource "aws_instance" "web_server" {
   vpc_security_group_ids      = [aws_security_group.web_sg.id]
   associate_public_ip_address = true
 
+  user_data = <<-EOF
+              #!/bin/bash
+              dnf update -y
+              dnf install nginx -y
+              systemctl start nginx
+              systemctl enable nginx
+              echo "<h1>Hello from Terraform DEV Web Server</h1>" > /usr/share/nginx/html/index.html
+              EOF
+
   tags = {
     Name        = "dev-web-server"
     Environment = "dev"
