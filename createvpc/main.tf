@@ -31,4 +31,75 @@ resource "aws_internet_gateway" "igw" {
     ManagedBy   = "Terraform"
   }
 }
- # create route table 
+# create route table 
+resource "aws_route_table" "public_route_table" {
+  vpc_id = aws_vpc.dev_vpc.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.igw.id
+  }
+
+  tags = {
+    Name        = "dev-public-route-table"
+    Environment = "dev"
+    ManagedBy   = "Terraform"
+  }
+}
+# Route Table Association.
+resource "aws_route_table_association" "public_subnet_association" {
+  subnet_id      = aws_subnet.public_subnet.id
+  route_table_id = aws_route_table.public_route_table.id
+}
+
+# security group
+resource "aws_security_group" "web_sg" {
+  name        = "dev-web-sg"
+  description = "Allow SSH and HTTP access"
+  vpc_id      = aws_vpc.dev_vpc.id
+
+  ingress {
+    description = "Allow SSH"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "Allow HTTP"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    description = "Allow all outbound traffic"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name        = "dev-web-sg"
+    Environment = "dev"
+    ManagedBy   = "Terraform"
+  }
+}
+
+# ec2 instance
+resource "aws_instance" "web_server" {
+  ami                         = "ami-0cfde0ea8edd312d4"
+  instance_type               = "t3.micro"
+  subnet_id                   = aws_subnet.public_subnet.id
+  vpc_security_group_ids      = [aws_security_group.web_sg.id]
+  associate_public_ip_address = true
+
+  tags = {
+    Name        = "dev-web-server"
+    Environment = "dev"
+    ManagedBy   = "Terraform"
+  }
+}
