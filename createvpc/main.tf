@@ -19,3 +19,16 @@ resource "aws_subnet" "public_subnet" {
     ManagedBy   = "Terraform"
   }
 }
+
+# internet gateway 
+
+resource "aws_internet_gateway" "igw" {
+  vpc_id = aws_vpc.dev_vpc.id
+
+  tags = {
+    Name        = "dev-igw"
+    Environment = "dev"
+    ManagedBy   = "Terraform"
+  }
+}
+ # create route table 
